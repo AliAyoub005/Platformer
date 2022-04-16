@@ -13,7 +13,7 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Platformer')
 
 #define game variables
-tile_size = 41
+tile_size = 40
 
 
 #load images3
@@ -29,7 +29,7 @@ class Player():
         self.counter = 0
         for num in range(1, 5):
             img_right = pygame.image.load(f'img/guy{num}.png')
-            img_right = pygame.transform.scale(img_right, (33, 80))
+            img_right = pygame.transform.scale(img_right, (35, 80))
             img_left = pygame.transform.flip(img_right, True, False)
             self.images_right.append(img_right)
             self.images_left.append(img_left)
@@ -149,6 +149,10 @@ class World():
                     img_rect.y = row_count * tile_size
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
+                if tile == 3:
+                    blob = Enemy(col_count * tile_size, row_count * tile_size + 7)
+                    blob_group.add(blob)
+                    
                 col_count += 1
             row_count += 1
 
@@ -157,7 +161,24 @@ class World():
             screen.blit(tile[0], tile[1])
             pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
 
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('img/blob.png')
+        self.rect = self.image.get_rect()
+        self.rect.x = x 
+        self.rect.y = y
+        self.move_direction = 1
+        self.move_counter = 0
 
+    def update(self):
+        self.rect.x += self.move_direction
+        self.move_counter += 1
+        if abs(self.move_counter) > 30:
+            self.move_direction *= -1
+            self.move_counter *= -1
+
+        
 
 world_data = [
 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
@@ -185,6 +206,10 @@ world_data = [
 
 
 player = Player(100, screen_height - 130)
+
+blob_group = pygame.sprite.Group()
+
+
 world = World(world_data)
 
 run = True
@@ -196,6 +221,9 @@ while run:
     screen.blit(sun_img, (100, 100))
 
     world.draw()
+
+    blob_group.update()
+    blob_group.draw(screen)
 
     player.update()
 
